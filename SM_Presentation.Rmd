@@ -13,7 +13,7 @@ transition: slowest
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = FALSE)
-library(ggforce); library(tidyverse); library(extrafont); loadfonts(device='win'); library(lhs); library(fitdistrplus)
+library(ggforce); library(tidyverse); library(extrafont); loadfonts(device='win'); library(lhs); library(fitdistrplus); library(DomDF)
 ```
 
 ## Contents
@@ -43,40 +43,42 @@ For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
 - Variability of Parameters
 
 ```{r, echo=FALSE, fig.width=4, fig.height=4, warning=FALSE}
-LNs<-function(m,s) sqrt(log(1+s^2/m^2)); LNm<-function(m,s) log(m)-0.5*LNs(m,s)^2
-Gscale<-function(s) (1/pi)*s*sqrt(6); Glocation<-function(m,s) m-gamma*Gscale(s)
+LNs <- function(m,s) sqrt(log(1 + s^2 / m^2)); LNm <- function(m,s) log(m) - 0.5 * LNs(m,s)^2
+Gscale <- function(s) (1 / pi) * s * sqrt(6); Glocation <- function(m,s) m - gamma * Gscale(s)
 
-set.seed(1008); binWidth<-25
-muS<-300; sigmaS<-50; N<-30; muSLN<-LNm(muS, sigmaS); sigmaSLN<-LNs(muS, sigmaS)
-S<-rlnorm(n=N, meanlog = muSLN, sdlog = sigmaSLN)
+set.seed(1008); binWidth <- 25
+muS <- 300; sigmaS <- 50; N <- 30; muSLN <- LNm(muS, sigmaS); sigmaSLN <- LNs(muS, sigmaS)
+S <- rlnorm(n = N, meanlog = muSLN, sdlog = sigmaSLN)
 
-minX<-0; maxX<-500; binWidth<-25
+minX <- 0; maxX <- 500; binWidth <- 25
 
-dF<-data.frame(S)
+dF <- data.frame(S)
 
-p<-0.05; lB<-qlnorm(p, meanlog = muSLN, sdlog = sigmaSLN)
-model<-fitdist(data = S, distr = 'lnorm')#; summary(model)
-test<-ks.test(S, 'plnorm')#; test$p.value
+p <- 0.05; lB <- qlnorm(p, meanlog = muSLN, sdlog = sigmaSLN)
+model <- fitdist(data = S, distr = 'lnorm')#; summary(model)
+test <- ks.test(S, 'plnorm')#; test$p.value
 
 ggplot(dF)+
-  geom_histogram(aes(x=dF$S), col='grey25', fill='grey75', binwidth = binWidth)+
+  geom_histogram(aes(x = S), col='grey25', fill='grey75', binwidth = binWidth)+
   geom_vline(xintercept = lB, linetype=2)+
   geom_label(aes(x=200, y=3, label='5% Lower Bound, \n225.4 MPa'), family='Trebuchet MS', 
              size=3)+
-  theme_bw(base_family = 'Trebuchet MS')+
-  scale_x_continuous(limits=c(minX, maxX), name='Yield Strength, MPa')+
-  scale_y_continuous(name='Count')+
-  theme(text=element_text(size=9))
+  theme_ddf_light(base_size = 12, base_family = 'Bahnschrift')+
+  scale_x_continuous(limits = c(minX, maxX), name = 'Yield Strength, MPa')+
+  scale_y_continuous(name = 'Count')+
+  theme(text = element_text(size = 9), 
+        axis.text.y = element_blank())
 
 ggplot(dF)+
-  geom_histogram(aes(x=dF$S, y=..density..), col='grey25', fill='grey75', binwidth = binWidth)+
+  geom_histogram(aes(x = S, y=..density..), col='grey25', fill='grey75', binwidth = binWidth)+
   stat_function(geom='line', fun = dlnorm, args = list(meanlog = muSLN, sdlog = sigmaSLN), linetype=2)+
   geom_label(aes(x=125, y=0.006, label='Lognormal \nApproximation \n ~ LN(300, 50)'), family='Trebuchet MS', 
              size=3)+
-  theme_bw(base_family = 'Trebuchet MS')+
+  theme_ddf_light(base_size = 12, base_family = 'Bahnschrift')+
   scale_x_continuous(limits=c(minX, maxX), name='Yield Strength, MPa')+
-  scale_y_continuous(name='Probability Density')+
-  theme(text=element_text(size=9))
+  scale_y_continuous(name = 'Probability Density')+
+  theme(text = element_text(size = 9), 
+        axis.text.y = element_blank())
 
 
 ```
@@ -89,15 +91,15 @@ ggplot(dF)+
 
 ```{r echo = FALSE, fig.align='center', fig.width=4.5, fig.height=4.5, warning=FALSE}
 
-mu.R<-180; sigma.R<-15; mu.S<-100; sigma.S<-20
-mu.M<-mu.R - mu.S; sigma.M<-sqrt(sigma.R^2+sigma.S^2)
+mu.R <- 180; sigma.R <- 15; mu.S <- 100; sigma.S <- 20
+mu.M <- mu.R - mu.S; sigma.M <- sqrt(sigma.R^2 + sigma.S^2)
 
 ggplot(NULL)+
-  stat_function(geom='density', fun=dnorm, args=list(mean=mu.R, sd=sigma.R), fill='grey', aes(alpha=' Resistance  '))+
-  stat_function(geom='density', fun=dnorm, args=list(mean=mu.S, sd=sigma.S), fill='grey', aes(alpha=' Load  '))+
-  theme_bw(base_family = 'Trebuchet MS')+
-  scale_x_continuous(limits=c(minX, maxX), name='Stress or Strength, MPa')+
-  scale_y_continuous(name='Probability Density')+
+  stat_function(geom = 'density', fun = dnorm, args = list(mean = mu.R, sd = sigma.R), fill='grey', aes(alpha = ' Resistance  '))+
+  stat_function(geom = 'density', fun = dnorm, args = list(mean = mu.S, sd = sigma.S), fill='grey', aes(alpha = ' Load  '))+
+  theme_ddf_light(base_size = 12, base_family = 'Bahnschrift')+
+  scale_x_continuous(limits = c(-50, 300), name = 'Stress or Strength, MPa')+
+  scale_y_continuous(name = 'Probability Density')+
   theme(legend.title = element_blank())+theme(legend.position = 'top')+
   theme(text=element_text(size=9))
 ```
@@ -114,16 +116,16 @@ ggplot(NULL)+
 
 ```{r echo = FALSE, fig.align='center', fig.width=4, fig.height=4, warning=FALSE}
 ggplot(NULL)+
-  stat_function(geom='density', fun=dnorm, args=list(mean=mu.M, sd=sigma.M), fill='grey', aes(alpha=' Margin (R-S)  '))+
-  theme_bw(base_family = 'Trebuchet MS')+
-  scale_x_continuous(limits=c(minX-100, maxX-100), name='Safety Margin, MPa')+
-  scale_y_continuous(name='Probability Density')+
+  stat_function(geom = 'density', fun=dnorm, args = list(mean = mu.M, sd = sigma.M), fill = 'grey', aes(alpha = ' Margin (R-S)  '))+
+  theme_ddf_light(base_size = 12, base_family = 'Bahnschrift')+
+  scale_x_continuous(limits = c(-50, 300), name = 'Safety Margin, MPa')+
+  scale_y_continuous(name = 'Probability Density')+
   theme(legend.title = element_blank())+theme(legend.position = 'top')+
-  theme(text=element_text(size=9))
+  theme(text=element_text(size = 9))
 
 
-Beta.An<-(mu.R-mu.S)/sqrt(sigma.R^2+sigma.S^2)
-PoF.An<-pnorm(-Beta.An)
+Beta.An <- (mu.R - mu.S) / sqrt(sigma.R^2 + sigma.S^2)
+PoF.An <- pnorm(-Beta.An)
 
 ```
 
@@ -136,29 +138,29 @@ Beta = 3.2
 ## Monte Carlo Simulation
 
 ```{r, echo=FALSE, warning=FALSE}
-N<-10^3
-meanR<-180; sdR<-20#; R<-rnorm(N, mean=meanR, sd=sdR)
-meanS<-100; sdS<-15#; S<-rnorm(N, mean=meanS, sd=sdS)
-meanM<-meanR - meanS; sdM<-sqrt(sdR^2+sdS^2); M<-rnorm(N, mean=meanM, sd=sdM)
+N <- 10^3
+meanR <- 180; sdR <- 20#; R<-rnorm(N, mean=meanR, sd=sdR)
+meanS <- 100; sdS <- 15#; S<-rnorm(N, mean=meanS, sd=sdS)
+meanM <- meanR - meanS; sdM <- sqrt(sdR^2 + sdS^2); M <- rnorm(N, mean = meanM, sd = sdM)
 #g<-R-S
 ```
 
 
 
 ```{r, echo = TRUE, warning=FALSE}
-set.seed(123); R<-rnorm(n=N, mean=meanR, sd=sdR)
+set.seed(123); R <- rnorm(n = N, mean = meanR, sd = sdR)
 ```
 
 ```{r, echo=FALSE, warning=FALSE}
 set.seed(1008)
-R<-rnorm(N, mean=meanR, sd=sdR); Rcd<-pnorm((R-meanR)/sdR); rDf<-data.frame(R, Rcd)
-ggplot(rDf)+geom_line(aes(y=Rcd, x=R))+
-  theme_bw(base_family = 'Trebuchet MS')+
-  xlab('Resistance Parameter, R (MPa)')+ylab('Cumulative Distribution Function of R')+
-  geom_segment(aes(y = 0.5, yend=0.5, x=125, xend=meanR), col='darkblue',
-               arrow = arrow(length=unit(0.25, 'cm'), type='closed'), linetype=5)+
-  geom_segment(aes(y = 0.5, yend=0, x=meanR, xend=meanR), col='darkblue',
-               arrow = arrow(length=unit(0.25, 'cm'), type='closed'), linetype=5)
+R <- rnorm(N, mean = meanR, sd = sdR); Rcd <- pnorm((R - meanR) / sdR); rDf <- data.frame(R, Rcd)
+ggplot(rDf)+ geom_line(aes(y = Rcd, x = R))+
+  theme_ddf_light(base_size = 12, base_family = 'Bahnschrift')+
+  xlab('Resistance Parameter, R (MPa)') + ylab('Cumulative Distribution Function of R')+
+  geom_segment(aes(y = 0.5, yend=0.5, x = 125, xend = meanR), col = 'darkblue',
+               arrow = arrow(length = unit(0.25, 'cm'), type = 'closed'), linetype = 5)+
+  geom_segment(aes(y = 0.5, yend = 0, x = meanR, xend = meanR), col = 'darkblue',
+               arrow = arrow(length = unit(0.25, 'cm'), type='closed'), linetype = 5)
 
 ```
 
@@ -171,28 +173,28 @@ ggplot(rDf)+geom_line(aes(y=Rcd, x=R))+
 ```{r, echo=FALSE, warning=FALSE}
 
 LS<-function(x){
-  log(-0.2+x/2)-(1.75+log(sqrt(1.75)/2))
+  log( - 0.2 + x/2) - (1.75 + log(sqrt(1.75) / 2))
 }
 
-N<-500; set.seed(1008)
-xmc<-rnorm(n=N, mean=0, sd=1); ymc<-rnorm(n=N, mean=0, sd=1)
-xis<-rnorm(n=N, mean=1.75, sd=1); yis<-rnorm(n=N, mean=-1.75, sd=1)
+N <- 500; set.seed(1008)
+xmc <- rnorm(n = N, mean = 0, sd = 1); ymc <- rnorm(n = N, mean = 0, sd = 1)
+xis <- rnorm(n = N, mean = 1.75, sd = 1); yis <- rnorm(n = N, mean = -1.75, sd = 1)
 
-SRAs<-data.frame(xmc, ymc, xis, yis)
+SRAs <- data.frame(xmc, ymc, xis, yis)
 
 ggplot(SRAs)+
-  geom_point(aes(x=xmc, y=ymc, col='Conventional Monte Carlo'), shape=1)+
+  geom_point(aes(x = xmc, y = ymc, col = 'Conventional Monte Carlo'), shape = 1)+
   #geom_point(aes(x=xis, y=yis, col='Importance Sampling'), shape=1)+
-  theme_bw(base_family = 'Trebuchet MS')+
-  scale_x_continuous(limits=c(-5,5), name='U1')+scale_y_continuous(limits=c(-5,5), name='U2')+
+  theme_ddf_light(base_size = 12, base_family = 'Bahnschrift')+
+  scale_x_continuous(limits = c(-5,5), name = 'U1') + scale_y_continuous(limits = c(-5,5), name='U2')+
   #geom_abline(intercept = -3.5, linetype=5)+
-  stat_function(fun=LS, linetype=5, col='darkred')+
+  stat_function(fun = LS, linetype = 5, col = 'darkred')+
   #geom_segment(aes(x=0, xend=1.75, y=0, yend=-1.75), col='darkblue',
   #             arrow = arrow(length=unit(0.25, 'cm'), type='closed'))+
   #geom_label(aes(x=3, y=-2.75, label='Reliability \nIndex, Beta'), family='Trebuchet MS', size=3.5)+
-  geom_label(aes(x=0.5, y=-4.75, label='g(u)=0'), #family='Trebuchet MS', 
-             size=3.5, col='darkred')+
-  theme(legend.title = element_blank())+theme(legend.position = 'top')
+  geom_label(aes(x = 0.5, y = -4.75, label = 'g(u)=0'), #family='Trebuchet MS', 
+             size = 3.5, col = 'darkred', family = 'Bahnschrift')+
+  theme(legend.title = element_blank()) + theme(legend.position = 'top')
 
 ```
 
@@ -208,28 +210,28 @@ Calculations using vectors of many realisations of random variables
 
 ```{r, echo=FALSE, warning=FALSE, message=FALSE}
 
-table<-read.csv('C:/Users/domen/Desktop/table.csv')
-table<-as.data.frame(table)
+table <- read.csv('C:/Users/domen/Desktop/table.csv')
+table <- as.data.frame(table)
 
-N.Req<-100/(mean(table$PoF.An))
+N.Req <- 100/(mean(table$PoF.An))
 
 #print(table)
 
-MC<-ggplot(table)+
-  geom_line(aes(x=table$N, y=table$PoF.An, col='Analytical Solution'))+
-  #geom_line(aes(x=table$N, y=table$PoF.lhc, col='Latin Hypercube Approximation'))+
-  #geom_line(aes(x=table$N, y=table$PoF.is, col='Importance Sampling Approximation'))+
-  geom_line(aes(x=table$N, y=table$PoF.mc, col='Monte Carlo Approximation'))+
-  #geom_line(aes(x=table$N, y=table$PoF.lhcis, col='Importance Sampling Approximation with LHS'))+
-  #scale_linetype_manual(values = c(2, 1))+
-  geom_vline(xintercept = N.Req, col='grey', linetype=5)+
-  geom_label(aes(x=N.Req, y=2*10^-4, label='145,531 Simulations\n Estimated to be Required'), family='Trebuchet MS', 
-             size=3.5)+
-  theme_bw(base_family = 'Trebuchet MS')+
-  theme(legend.title = element_blank())+theme(legend.position = 'top')+
-  scale_y_continuous(name='Probability of Failure')+
-  scale_x_continuous(name='Log10(Number of Simulations)', trans = 'log10', breaks=c(10, 10^2, 10^3, 10^4, 10^5))+
-  guides(linetype=guide_legend(nrow=2, byrow = TRUE)) + annotation_logticks(sides='b')
+MC <- ggplot(table)+
+  geom_line(aes(x = table$N, y = table$PoF.An, col='Analytical Solution'))+
+  #geom_line(aes(x = table$N, y = table$PoF.lhc, col = 'Latin Hypercube Approximation'))+
+  #geom_line(aes(x = table$N, y = table$PoF.is, col = 'Importance Sampling Approximation'))+
+  geom_line(aes(x = table$N, y = table$PoF.mc, col = 'Monte Carlo Approximation'))+
+  #geom_line(aes(x = table$N, y = table$PoF.lhcis, col = 'Importance Sampling Approximation with LHS'))+
+  #scale_linetype_manual(values  =  c(2, 1))+
+  geom_vline(xintercept  =  N.Req, col = 'grey', linetype = 5)+
+  geom_label(aes(x = N.Req, y = 2*10^-4, label = '145,531 Simulations\n Estimated to be Required'), family = 'Bahnschrift', 
+             size = 3.5)+
+  theme_ddf_light(base_size = 12, base_family = 'Bahnschrift')+
+  theme(legend.title  =  element_blank())+theme(legend.position  =  'top')+
+  scale_y_continuous(name = 'Probability of Failure')+
+  scale_x_continuous(name = 'Log10(Number of Simulations)', trans  =  'log10', breaks = c(10, 10^2, 10^3, 10^4, 10^5))+
+  guides(linetype = guide_legend(nrow = 2, byrow  =  TRUE)) + annotation_logticks(sides = 'b')
 
 MC
 #library(plotly)
@@ -242,17 +244,17 @@ MC
 
 ```{r, echo=TRUE, warning=FALSE}
 library(lhs)
-nVar<-2; nInt<-10; A <- randomLHS(nInt,nVar)
+nVar <- 2; nInt <- 10; A <- randomLHS(nInt,nVar)
 ```
 
 
 ```{r, echo=FALSE, warning=FALSE, fig.width=4.5, fig.height=4.5, fig.align='center'}
-df<-data.frame(A)
+df <- data.frame(A)
 
-xmin<-0; xmax<-1; ymin<-0; ymax<-1
+xmin <- 0; xmax <- 1; ymin <- 0; ymax <- 1
 
-ggplot(df)+ geom_point(aes(x=A[,1], y=A[,2]), shape=1, col='darkblue')+
-  theme_bw(base_family='Trebuchet MS')+
+ggplot(df)+ geom_point(aes(x = A[,1], y = A[,2]), shape = 1, col = 'darkblue')+
+  theme_ddf_light(base_size = 12, base_family = 'Bahnschrift')+
   theme(panel.grid.major = element_blank(), panel.grid.minor = element_blank())+
   geom_vline(xintercept = 1*(xmax-xmin)/nInt, col='grey', linetype=2)+geom_hline(yintercept = 1*(ymax-ymin)/nInt, col='grey', linetype=2)+
   geom_vline(xintercept = 2*(xmax-xmin)/nInt, col='grey', linetype=2)+geom_hline(yintercept = 2*(ymax-ymin)/nInt, col='grey', linetype=2)+
@@ -272,26 +274,27 @@ ggplot(df)+ geom_point(aes(x=A[,1], y=A[,2]), shape=1, col='darkblue')+
 
 ```{r, echo=FALSE, warning=FALSE, fig.align='center', fig.width=5.5, fig.height=5.5}
 
-nInt<-10; A <- randomLHS(nInt,nVar); set.seed(1008)
-df<-data.frame(nInt=10, n=paste(nInt, ' samples'), MC=rnorm(n=10), LHS=qnorm(A[,2]))
+nInt <- 10; A <- randomLHS(nInt,nVar); set.seed(1008)
+df <- data.frame(nInt = 10, n=paste(nInt, ' samples'), MC = rnorm(n=10), LHS = qnorm(A[,2]))
 
-while (nInt<=10^4) {
+while (nInt <= 10^4) {
   set.seed(1)
   A <- randomLHS(nInt,nVar)
-  MC<-rnorm(n=nInt); LHS<-qnorm(A[,2])
-  n<-paste(nInt, 'samples')
-  newRow<-data.frame(nInt, n, MC, LHS); df<-rbind(df, newRow); nInt<-nInt*10; n<-paste(nInt, 'samples')
+  MC <- rnorm(n = nInt); LHS <- qnorm(A[,2])
+  n <- paste(nInt, 'samples')
+  newRow <- data.frame(nInt, n, MC, LHS); df <- rbind(df, newRow); nInt <- nInt * 10; n <- paste(nInt, 'samples')
 }
-df<-df[-c(1:10), ]
+
+df <- df[-c(1:10), ]
 
 ggplot(df)+
-  geom_density(aes(x=MC, alpha=' Monte Carlo '), fill='grey')+
-  geom_density(aes(x=LHS, alpha=' Latin Hypercube '), fill='grey')+
-  scale_x_continuous(name='Random Variable', limits = c(-3,3))+
-  scale_y_continuous(name='Probability Density')+
-  stat_function(geom='line', fun='dnorm', args=list(mean=0, sd=1), aes(linetype=' True Distribution  '))+
-  scale_linetype_manual(values=2)+
-  theme_bw(base_family = 'Trebuchet MS')+
+  geom_density(aes(x = MC, alpha = ' Monte Carlo '), fill = 'grey')+
+  geom_density(aes(x = LHS, alpha = ' Latin Hypercube '), fill = 'grey')+
+  scale_x_continuous(name = 'Random Variable', limits = c(-3,3))+
+  scale_y_continuous(name = 'Probability Density')+
+  stat_function(geom='line', fun='dnorm', args = list(mean = 0, sd = 1), aes(linetype = ' True Distribution  '))+
+  scale_linetype_manual(values = 2)+
+  theme_ddf_light(base_size = 12, base_family = 'Bahnschrift')+
   theme(legend.title = element_blank())+theme(legend.position = 'top')+
   #guides(alpha=guide_legend(nrow=2, byrow = TRUE))+
   facet_wrap(~n, ncol = 2)
@@ -304,26 +307,26 @@ ggplot(df)+
 
 #setwd('C:/Users/domen/Desktop')
 #table<-read.csv('C:/Users/domen/Desktop/table.csv')
-table<-as.data.frame(table)
+table <- as.data.frame(table)
 
-N.Req<-100/(mean(table$PoF.An))
+N.Req <- 100 / (mean(table$PoF.An))
 
 #print(table)
 
 ggplot(table)+
-  geom_line(aes(x=table$N, y=table$PoF.An, col='Analytical Solution'))+
-  geom_line(aes(x=table$N, y=table$PoF.lhc, col='Latin Hypercube Approximation'))+
+  geom_line(aes(x = table$N, y = table$PoF.An, col = 'Analytical Solution'))+
+  geom_line(aes(x = table$N, y = table$PoF.lhc, col = 'Latin Hypercube Approximation'))+
   #geom_line(aes(x=table$N, y=table$PoF.is, col='Importance Sampling Approximation'))+
-  geom_line(aes(x=table$N, y=table$PoF.mc, col='Monte Carlo Approximation'))+
+  geom_line(aes(x = table$N, y = table$PoF.mc, col = 'Monte Carlo Approximation'))+
   #geom_line(aes(x=table$N, y=table$PoF.lhcis, col='Importance Sampling Approximation with LHS'))+
   #scale_linetype_manual(values = c(2, 3, 1))+
   #geom_vline(xintercept = N.Req, col='grey', linetype=5)+
   #geom_label(aes(x=N.Req, y=10^-4, label='145,531 Simulations\n Estimated to be Required'), family='Trebuchet MS', size=3.5)+
-  theme_bw(base_family = 'Trebuchet MS')+
+  theme_ddf_light(base_size = 12, base_family = 'Bahnschrift')+
   theme(legend.title = element_blank())+theme(legend.position = 'top')+
-  scale_y_continuous(name='Probability of Failure')+
-  scale_x_continuous(name='Number of Simulations', trans = 'log10', breaks=c(10, 10^2, 10^3, 10^4, 10^5))+
-  guides(linetype=guide_legend(nrow=3, byrow = TRUE))+annotation_logticks(sides='b')
+  scale_y_continuous(name = 'Probability of Failure')+
+  scale_x_continuous(name = 'Number of Simulations', trans = 'log10', breaks = c(10, 10^2, 10^3, 10^4, 10^5))+
+  guides(linetype=guide_legend(nrow = 3, byrow = TRUE)) + annotation_logticks(sides = 'b')
 
 ```
 
@@ -336,28 +339,28 @@ ggplot(table)+
 ```{r, echo=FALSE, warning=FALSE}
 
 LS<-function(x){
-  log(-0.2+x/2)-(1.75+log(sqrt(1.75)/2))
+  log(-0.2 + x / 2) - (1.75 + log(sqrt(1.75) / 2))
 }
 
-N<-500; set.seed(1008)
-xmc<-rnorm(n=N, mean=0, sd=1); ymc<-rnorm(n=N, mean=0, sd=1)
-xis<-rnorm(n=N, mean=1.75, sd=1); yis<-rnorm(n=N, mean=-1.75, sd=1)
+N <- 500; set.seed(1008)
+xmc <- rnorm(n = N, mean = 0, sd = 1); ymc <- rnorm(n = N, mean = 0, sd = 1)
+xis <- rnorm(n = N, mean = 1.75, sd = 1); yis <- rnorm(n = N, mean = -1.75, sd = 1)
 
-SRAs<-data.frame(xmc, ymc, xis, yis)
+SRAs <- data.frame(xmc, ymc, xis, yis)
 
 ggplot(SRAs)+
-  geom_point(aes(x=xmc, y=ymc, col='Conventional Monte Carlo'), shape=1)+
-  geom_point(aes(x=xis, y=yis, col='Importance Sampling'), shape=1)+
-  theme_bw(base_family = 'Trebuchet MS')+
-  scale_x_continuous(limits=c(-5,5), name='U1')+scale_y_continuous(limits=c(-5,5), name='U2')+
+  geom_point(aes(x = xmc, y = ymc, col = 'Conventional Monte Carlo'), shape = 1)+
+  geom_point(aes(x = xis, y = yis, col = 'Importance Sampling'), shape = 1)+
+  theme_ddf_light(base_size = 12, base_family = 'Bahnschrift')+
+  scale_x_continuous(limits = c(-5, 5), name = 'U1') + scale_y_continuous(limits = c(-5,5), name = 'U2')+
   #geom_abline(intercept = -3.5, linetype=5)+
-  stat_function(fun=LS, linetype=5, col='darkred')+
+  stat_function(fun = LS, linetype = 5, col = 'darkred')+
   #geom_segment(aes(x=0, xend=1.75, y=0, yend=-1.75), col='darkblue',
   #             arrow = arrow(length=unit(0.25, 'cm'), type='closed'))+
   #geom_label(aes(x=3, y=-2.75, label='Reliability \nIndex, Beta'), family='Trebuchet MS', size=3.5)+
-  geom_label(aes(x=0.5, y=-4.75, label='g(u)=0'), #family='Trebuchet MS', 
-             size=3.5, col='darkred')+
-  theme(legend.title = element_blank())+theme(legend.position = 'top')
+  geom_label(aes(x = 0.5, y = -4.75, label = 'g(u)=0'), #family='Trebuchet MS', 
+             size = 3.5, col = 'darkred', family = 'Bahnschrift')+
+  theme(legend.title = element_blank()) + theme(legend.position = 'top')
 
 ```
 
@@ -367,26 +370,26 @@ ggplot(SRAs)+
 
 #setwd('C:/Users/domen/Desktop')
 #table<-read.csv('C:/Users/domen/Desktop/table.csv')
-table<-as.data.frame(table)
+table <- as.data.frame(table)
 
-N.Req<-100/(mean(table$PoF.An))
+N.Req <- 100 / (mean(table$PoF.An))
 
 #print(table)
 
 ggplot(table)+
-  geom_line(aes(x=table$N, y=table$PoF.An, col=' Analytical Solution  '))+
+  geom_line(aes(x = table$N, y = table$PoF.An, col = ' Analytical Solution  '))+
   #geom_line(aes(x=table$N, y=table$PoF.lhc, col='Latin Hypercube Approximation'))+
-  geom_line(aes(x=table$N, y=table$PoF.is, col=' Importance Sampling Approximation  '))+
-  geom_line(aes(x=table$N, y=table$PoF.mc, col=' Monte Carlo Approximation  '))+
+  geom_line(aes(x = table$N, y = table$PoF.is, col = ' Importance Sampling Approximation  '))+
+  geom_line(aes(x = table$N, y = table$PoF.mc, col = ' Monte Carlo Approximation  '))+
   #geom_line(aes(x=table$N, y=table$PoF.lhcis, col='Importance Sampling Approximation with LHS'))+
   #scale_linetype_manual(values = c(2, 3, 1))+
   #geom_vline(xintercept = N.Req, col='grey', linetype=5)+
   #geom_label(aes(x=N.Req, y=10^-4, label='145,531 Simulations\n Estimated to be Required'), family='Trebuchet MS', size=3.5)+
-  theme_bw(base_family = 'Trebuchet MS')+
-  theme(legend.title = element_blank())+theme(legend.position = 'top')+
-  scale_y_continuous(name='Probability of Failure')+
-  scale_x_continuous(name='Number of Simulations', trans = 'log10', breaks=c(10, 10^2, 10^3, 10^4, 10^5))+
-  guides(linetype=guide_legend(nrow=3, byrow = TRUE))+annotation_logticks(sides='b')
+  theme_ddf_light(base_size = 12, base_family = 'Bahnschrift')+
+  theme(legend.title = element_blank()) + theme(legend.position = 'top')+
+  scale_y_continuous(name = 'Probability of Failure')+
+  scale_x_continuous(name = 'Number of Simulations', trans = 'log10', breaks = c(10, 10^2, 10^3, 10^4, 10^5))+
+  guides(linetype = guide_legend(nrow = 3, byrow = TRUE)) + annotation_logticks(sides = 'b')
 
 ```
 
@@ -396,26 +399,26 @@ ggplot(table)+
 
 #setwd('C:/Users/domen/Desktop')
 #table<-read.csv('C:/Users/domen/Desktop/table.csv')
-table<-as.data.frame(table)
+table <- as.data.frame(table)
 
-N.Req<-100/(mean(table$PoF.An))
+N.Req <- 100 / (mean(table$PoF.An))
 
 #print(table)
 
 ggplot(table)+
-  geom_line(aes(x=table$N, y=table$PoF.An, col=' Analytical Solution  '))+
+  geom_line(aes(x = table$N, y=table$PoF.An, col=' Analytical Solution  '))+
   #geom_line(aes(x=table$N, y=table$PoF.lhc, col='Latin Hypercube Approximation'))+
-  geom_line(aes(x=table$N, y=table$PoF.is, col=' Importance Sampling Approximation  '))+
+  geom_line(aes(x = table$N, y=table$PoF.is, col = ' Importance Sampling Approximation  '))+
   #geom_line(aes(x=table$N, y=table$PoF.mc, col='Monte Carlo Approximation'))+
-  geom_line(aes(x=table$N, y=table$PoF.lhcis, col=' Importance Sampling with LHS  '))+
+  geom_line(aes(x = table$N, y = table$PoF.lhcis, col = ' Importance Sampling with LHS  '))+
   #scale_linetype_manual(values = c(2, 3, 1))+
   #geom_vline(xintercept = N.Req, col='grey', linetype=5)+
   #geom_label(aes(x=N.Req, y=10^-4, label='145,531 Simulations\n Estimated to be Required'), family='Trebuchet MS', size=3.5)+
-  theme_bw(base_family = 'Trebuchet MS')+
-  theme(legend.title = element_blank())+theme(legend.position = 'top')+
-  scale_y_continuous(name='Probability of Failure')+
-  scale_x_continuous(name='Number of Simulations', trans = 'log10', breaks=c(10, 10^2, 10^3, 10^4, 10^5))+
-  guides(linetype=guide_legend(nrow=3, byrow = TRUE))+annotation_logticks(sides='b')
+  theme_ddf_light(base_size = 12, base_family = 'Bahnschrift')+
+  theme(legend.title = element_blank()) + theme(legend.position = 'top')+
+  scale_y_continuous(name = 'Probability of Failure')+
+  scale_x_continuous(name = 'Number of Simulations', trans = 'log10', breaks = c(10, 10^2, 10^3, 10^4, 10^5))+
+  guides(linetype = guide_legend(nrow = 3, byrow = TRUE)) + annotation_logticks(sides = 'b')
 
 ```
 
